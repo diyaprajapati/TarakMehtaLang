@@ -1,19 +1,9 @@
-Gokuldham 
-{
-    tapu_int a = 5;
-    tapu_int b = 3;
+Gokuldham {
     tapu_string str = "Hello";
-
-    bapuji_sahmat(a < b)
-    {
-        // This is inside the if block
-        daya_ki_maa_ne_kaha(tapu_string, str);
-    }
-    bapuji_asahmat
-    {
-        // This is inside the else block
-        daya_ki_maa_ne_kaha(tapu_int, b);
-    }
-
+    tapu_int a = 10;
+    tapu_int b = 0;
+    daya_ki_maa_ne_kaha(tapu_string, str);
+    daya_ki_maa_ne_kaha(tapu_int, a);
+    a = a / b; // Division by zero
     nahane_ja;
 }

@@ -72,15 +72,14 @@ extern int yydebug;
     TIMES = 273,                   /* TIMES  */
     DIVIDE = 274,                  /* DIVIDE  */
     GOKULDHAM = 275,               /* GOKULDHAM  */
-    BAPUJI_SAHMAT = 276,           /* BAPUJI_SAHMAT  */
-    BAPUJI_ASAHMAT = 277,          /* BAPUJI_ASAHMAT  */
-    EQUAL = 278,                   /* EQUAL  */
-    NE = 279,                      /* NE  */
-    LT = 280,                      /* LT  */
-    LE = 281,                      /* LE  */
-    GT = 282,                      /* GT  */
-    GE = 283,                      /* GE  */
-    NAHANE_JA = 284                /* NAHANE_JA  */
+    EQUAL = 276,                   /* EQUAL  */
+    NE = 277,                      /* NE  */
+    LT = 278,                      /* LT  */
+    LE = 279,                      /* LE  */
+    GT = 280,                      /* GT  */
+    GE = 281,                      /* GE  */
+    NAHANE_JA = 282,               /* NAHANE_JA  */
+    NEG = 283                      /* NEG  */
   };
   typedef enum yytokentype yytoken_kind_t;
 #endif
@@ -89,12 +88,12 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 20 "tmkoc_yacc.y"
+#line 30 "tmkoc_yacc.y"
 
     int num;
     char* str;
 
-#line 98 "tmkoc_yacc.tab.h"
+#line 97 "tmkoc_yacc.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

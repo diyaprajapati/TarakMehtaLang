@@ -76,7 +76,8 @@
 extern FILE* yyin;
 extern int yylex();
 extern int yyerror(const char *msg);
-int if_else_active = 0;
+extern int line_num; // Line number from lexer
+extern int column_num; // Column number from lexer
 
 typedef union {
     int num;
@@ -85,8 +86,17 @@ typedef union {
 
 SymValue sym[26];
 
+void free_symbol_table() {
+    for (int i = 0; i < 26; i++) {
+        if (sym[i].str) {
+            free(sym[i].str);
+            sym[i].str = NULL;
+        }
+    }
+}
 
-#line 90 "tmkoc_yacc.tab.c"
+
+#line 100 "tmkoc_yacc.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -135,27 +145,25 @@ enum yysymbol_kind_t
   YYSYMBOL_TIMES = 18,                     /* TIMES  */
   YYSYMBOL_DIVIDE = 19,                    /* DIVIDE  */
   YYSYMBOL_GOKULDHAM = 20,                 /* GOKULDHAM  */
-  YYSYMBOL_BAPUJI_SAHMAT = 21,             /* BAPUJI_SAHMAT  */
-  YYSYMBOL_BAPUJI_ASAHMAT = 22,            /* BAPUJI_ASAHMAT  */
-  YYSYMBOL_EQUAL = 23,                     /* EQUAL  */
-  YYSYMBOL_NE = 24,                        /* NE  */
-  YYSYMBOL_LT = 25,                        /* LT  */
-  YYSYMBOL_LE = 26,                        /* LE  */
-  YYSYMBOL_GT = 27,                        /* GT  */
-  YYSYMBOL_GE = 28,                        /* GE  */
-  YYSYMBOL_NAHANE_JA = 29,                 /* NAHANE_JA  */
-  YYSYMBOL_YYACCEPT = 30,                  /* $accept  */
-  YYSYMBOL_program = 31,                   /* program  */
-  YYSYMBOL_block = 32,                     /* block  */
-  YYSYMBOL_33_1 = 33,                      /* $@1  */
-  YYSYMBOL_statement_list = 34,            /* statement_list  */
-  YYSYMBOL_statement = 35,                 /* statement  */
+  YYSYMBOL_EQUAL = 21,                     /* EQUAL  */
+  YYSYMBOL_NE = 22,                        /* NE  */
+  YYSYMBOL_LT = 23,                        /* LT  */
+  YYSYMBOL_LE = 24,                        /* LE  */
+  YYSYMBOL_GT = 25,                        /* GT  */
+  YYSYMBOL_GE = 26,                        /* GE  */
+  YYSYMBOL_NAHANE_JA = 27,                 /* NAHANE_JA  */
+  YYSYMBOL_NEG = 28,                       /* NEG  */
+  YYSYMBOL_YYACCEPT = 29,                  /* $accept  */
+  YYSYMBOL_program = 30,                   /* program  */
+  YYSYMBOL_block = 31,                     /* block  */
+  YYSYMBOL_32_1 = 32,                      /* $@1  */
+  YYSYMBOL_statement_list = 33,            /* statement_list  */
+  YYSYMBOL_statement = 34,                 /* statement  */
+  YYSYMBOL_expression = 35,                /* expression  */
   YYSYMBOL_declaration = 36,               /* declaration  */
-  YYSYMBOL_print_statement = 37,           /* print_statement  */
-  YYSYMBOL_if_else_statement = 38,         /* if_else_statement  */
-  YYSYMBOL_nahane_ja_statement = 39,       /* nahane_ja_statement  */
-  YYSYMBOL_condition = 40,                 /* condition  */
-  YYSYMBOL_expression = 41                 /* expression  */
+  YYSYMBOL_assignment = 37,                /* assignment  */
+  YYSYMBOL_print_statement = 38,           /* print_statement  */
+  YYSYMBOL_nahane_ja_statement = 39        /* nahane_ja_statement  */
 };
 typedef enum yysymbol_kind_t yysymbol_kind_t;
 
@@ -483,19 +491,19 @@ union yyalloc
 /* YYFINAL -- State number of the termination state.  */
 #define YYFINAL  5
 /* YYLAST -- Last index in YYTABLE.  */
-#define YYLAST   104
+#define YYLAST   61
 
 /* YYNTOKENS -- Number of terminals.  */
-#define YYNTOKENS  30
+#define YYNTOKENS  29
 /* YYNNTS -- Number of nonterminals.  */
-#define YYNNTS  12
+#define YYNNTS  11
 /* YYNRULES -- Number of rules.  */
-#define YYNRULES  32
+#define YYNRULES  24
 /* YYNSTATES -- Number of states.  */
-#define YYNSTATES  94
+#define YYNSTATES  58
 
 /* YYMAXUTOK -- Last valid token kind.  */
-#define YYMAXUTOK   284
+#define YYMAXUTOK   283
 
 
 /* YYTRANSLATE(TOKEN-NUM) -- Symbol number corresponding to TOKEN-NUM
@@ -537,17 +545,16 @@ static const yytype_int8 yytranslate[] =
        2,     2,     2,     2,     2,     2,     1,     2,     3,     4,
        5,     6,     7,     8,     9,    10,    11,    12,    13,    14,
       15,    16,    17,    18,    19,    20,    21,    22,    23,    24,
-      25,    26,    27,    28,    29
+      25,    26,    27,    28
 };
 
 #if YYDEBUG
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    35,    35,    38,    38,    43,    44,    47,    48,    49,
-      50,    62,    63,    64,    65,    66,    67,    76,    82,    88,
-      91,    94,    97,   105,   116,   122,   123,   124,   125,   126,
-     127,   131,   132
+       0,    50,    50,    53,    53,    58,    59,    62,    63,    64,
+      65,    68,    69,    77,    78,    79,    80,    87,    88,    91,
+      99,   109,   119,   130,   143
 };
 #endif
 
@@ -566,11 +573,10 @@ static const char *const yytname[] =
   "\"end of file\"", "error", "\"invalid token\"", "NUM", "IDENTIFIER",
   "STRING_LITERAL", "TAPU_INT", "TAPU_STRING", "EQ", "SEMICOLON", "COMMA",
   "PRINT", "OPEN_PAREN", "CLOSE_PAREN", "OPEN_BRACE", "CLOSE_BRACE",
-  "PLUS", "MINUS", "TIMES", "DIVIDE", "GOKULDHAM", "BAPUJI_SAHMAT",
-  "BAPUJI_ASAHMAT", "EQUAL", "NE", "LT", "LE", "GT", "GE", "NAHANE_JA",
-  "$accept", "program", "block", "$@1", "statement_list", "statement",
-  "declaration", "print_statement", "if_else_statement",
-  "nahane_ja_statement", "condition", "expression", YY_NULLPTR
+  "PLUS", "MINUS", "TIMES", "DIVIDE", "GOKULDHAM", "EQUAL", "NE", "LT",
+  "LE", "GT", "GE", "NAHANE_JA", "NEG", "$accept", "program", "block",
+  "$@1", "statement_list", "statement", "expression", "declaration",
+  "assignment", "print_statement", "nahane_ja_statement", YY_NULLPTR
 };
 
 static const char *
@@ -580,7 +586,7 @@ yysymbol_name (yysymbol_kind_t yysymbol)
 }
 #endif
 
-#define YYPACT_NINF (-53)
+#define YYPACT_NINF (-20)
 
 #define yypact_value_is_default(Yyn) \
   ((Yyn) == YYPACT_NINF)
@@ -594,16 +600,12 @@ yysymbol_name (yysymbol_kind_t yysymbol)
    STATE-NUM.  */
 static const yytype_int8 yypact[] =
 {
-     -14,    -6,    10,   -53,   -53,   -53,    15,     8,    14,     2,
-      11,    19,    -4,   -53,   -53,   -53,   -53,   -53,    23,    29,
-      53,    58,   -53,   -53,   -53,    60,    52,    55,    56,   -53,
-     -53,    54,    22,    59,    24,    61,    65,    67,    62,    58,
-      58,    58,    58,    58,    58,   -53,    68,    69,    70,    71,
-     -53,    16,    64,    15,   -53,   -53,   -53,   -53,   -53,   -53,
-      72,    73,    74,    75,    76,    82,    83,    84,    85,    81,
-      -2,   -53,   -53,   -53,   -53,   -53,    66,    78,    79,    80,
-     -53,    77,    86,    87,    88,    89,    90,   -53,   -53,   -53,
-     -53,    15,     9,   -53
+     -19,     1,    10,   -20,   -20,   -20,     2,     4,    16,    22,
+      15,     5,    -4,   -20,   -20,   -20,   -20,   -20,    13,    32,
+      33,    -2,   -20,   -20,   -20,   -20,   -20,    13,    13,    19,
+      13,    38,    34,    35,    37,   -20,   -20,    13,    13,    13,
+      13,    30,    42,    48,    53,   -20,     0,     0,   -20,   -20,
+     -20,   -20,    29,    45,    50,    51,   -20,   -20
 };
 
 /* YYDEFACT[STATE-NUM] -- Default reduction number in state STATE-NUM.
@@ -613,28 +615,24 @@ static const yytype_int8 yydefact[] =
 {
        0,     0,     0,     2,     3,     1,     0,     0,     0,     0,
        0,     0,     0,     5,     7,     8,     9,    10,     0,     0,
-       0,     0,    24,     4,     6,     0,     0,     0,     0,    32,
-      31,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,     0,     0,     0,     0,    11,     0,     0,     0,     0,
-      12,     0,     0,     0,    25,    26,    27,    28,    29,    30,
-       0,     0,     0,     0,     0,     0,     0,     0,     0,     0,
-       0,    13,    14,    15,    16,    17,     0,     0,     0,     0,
-      18,     0,     0,     0,     0,     0,     0,    19,    20,    21,
-      22,     0,     0,    23
+       0,     0,    24,     4,     6,    11,    12,     0,     0,     0,
+       0,     0,     0,     0,     0,    17,    21,     0,     0,     0,
+       0,     0,     0,     0,     0,    18,    13,    14,    15,    16,
+      19,    20,     0,     0,     0,     0,    22,    23
 };
 
 /* YYPGOTO[NTERM-NUM].  */
 static const yytype_int8 yypgoto[] =
 {
-     -53,   -53,   -53,   -53,   -52,   -12,   -53,   -53,   -53,   -53,
-     -53,    12
+     -20,   -20,   -20,   -20,   -20,    49,    -6,   -20,   -20,   -20,
+     -20
 };
 
 /* YYDEFGOTO[NTERM-NUM].  */
 static const yytype_int8 yydefgoto[] =
 {
-       0,     2,     3,     6,    12,    13,    14,    15,    16,    17,
-      31,    32
+       0,     2,     3,     6,    12,    13,    29,    14,    15,    16,
+      17
 };
 
 /* YYTABLE[YYPACT[STATE-NUM]] -- What to do in state STATE-NUM.  If
@@ -642,66 +640,52 @@ static const yytype_int8 yydefgoto[] =
    number is the opposite.  If YYTABLE_NINF, syntax error.  */
 static const yytype_int8 yytable[] =
 {
-      24,    70,     7,     8,     7,     8,     1,     9,     4,     9,
-       5,    23,    18,    81,    20,     7,     8,    10,    19,    10,
-       9,     7,     8,    21,    93,    11,     9,    11,    22,    64,
-      10,    25,    65,    66,    67,    68,    10,    26,    11,    92,
-      46,    47,    48,    49,    11,    39,    40,    41,    42,    43,
-      44,    54,    55,    56,    57,    58,    59,    35,    24,    27,
-      28,    29,    30,    33,    34,    36,    37,    38,    45,    51,
-      50,    52,    60,    61,    62,    63,    53,    69,     0,    82,
-      24,    71,    72,    73,    74,    75,    76,    77,    78,    79,
-      80,    83,    84,    85,     0,    87,    88,    89,    90,    86,
-       0,     0,     0,     0,    91
+       7,     1,     8,     9,    32,    33,     7,    10,     8,     9,
+       5,    23,    18,    10,    22,     4,    25,    26,    39,    40,
+      19,    34,    35,    11,    41,    27,    20,    21,    36,    11,
+      28,    46,    47,    48,    49,    37,    38,    39,    40,    50,
+      30,    31,    54,    42,    43,    44,    37,    38,    39,    40,
+      45,    51,    52,    37,    38,    39,    40,    53,    55,    56,
+      57,    24
 };
 
 static const yytype_int8 yycheck[] =
 {
-      12,    53,     6,     7,     6,     7,    20,    11,    14,    11,
-       0,    15,     4,    15,    12,     6,     7,    21,     4,    21,
-      11,     6,     7,    12,    15,    29,    11,    29,     9,    13,
-      21,     8,    16,    17,    18,    19,    21,     8,    29,    91,
-      16,    17,    18,    19,    29,    23,    24,    25,    26,    27,
-      28,    39,    40,    41,    42,    43,    44,     5,    70,     6,
-       7,     3,     4,     3,     4,    10,    10,    13,     9,     4,
-       9,     4,     4,     4,     4,     4,    14,    13,    -1,    13,
-      92,     9,     9,     9,     9,     9,     4,     4,     4,     4,
-       9,    13,    13,    13,    -1,     9,     9,     9,     9,    22,
-      -1,    -1,    -1,    -1,    14
+       4,    20,     6,     7,     6,     7,     4,    11,     6,     7,
+       0,    15,     8,    11,     9,    14,     3,     4,    18,    19,
+       4,    27,    28,    27,    30,    12,     4,    12,     9,    27,
+      17,    37,    38,    39,    40,    16,    17,    18,    19,     9,
+       8,     8,    13,     5,    10,    10,    16,    17,    18,    19,
+      13,     9,     4,    16,    17,    18,    19,     4,    13,     9,
+       9,    12
 };
 
 /* YYSTOS[STATE-NUM] -- The symbol kind of the accessing symbol of
    state STATE-NUM.  */
 static const yytype_int8 yystos[] =
 {
-       0,    20,    31,    32,    14,     0,    33,     6,     7,    11,
-      21,    29,    34,    35,    36,    37,    38,    39,     4,     4,
-      12,    12,     9,    15,    35,     8,     8,     6,     7,     3,
-       4,    40,    41,     3,     4,     5,    10,    10,    13,    23,
-      24,    25,    26,    27,    28,     9,    16,    17,    18,    19,
-       9,     4,     4,    14,    41,    41,    41,    41,    41,    41,
-       4,     4,     4,     4,    13,    16,    17,    18,    19,    13,
-      34,     9,     9,     9,     9,     9,     4,     4,     4,     4,
-       9,    15,    13,    13,    13,    13,    22,     9,     9,     9,
-       9,    14,    34,    15
+       0,    20,    30,    31,    14,     0,    32,     4,     6,     7,
+      11,    27,    33,    34,    36,    37,    38,    39,     8,     4,
+       4,    12,     9,    15,    34,     3,     4,    12,    17,    35,
+       8,     8,     6,     7,    35,    35,     9,    16,    17,    18,
+      19,    35,     5,    10,    10,    13,    35,    35,    35,    35,
+       9,     9,     4,     4,    13,    13,     9,     9
 };
 
 /* YYR1[RULE-NUM] -- Symbol kind of the left-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr1[] =
 {
-       0,    30,    31,    33,    32,    34,    34,    35,    35,    35,
-      35,    36,    36,    36,    36,    36,    36,    37,    37,    37,
-      37,    37,    37,    38,    39,    40,    40,    40,    40,    40,
-      40,    41,    41
+       0,    29,    30,    32,    31,    33,    33,    34,    34,    34,
+      34,    35,    35,    35,    35,    35,    35,    35,    35,    36,
+      36,    37,    38,    38,    39
 };
 
 /* YYR2[RULE-NUM] -- Number of symbols on the right-hand side of rule RULE-NUM.  */
 static const yytype_int8 yyr2[] =
 {
        0,     2,     1,     0,     5,     1,     2,     1,     1,     1,
-       1,     5,     5,     7,     7,     7,     7,     7,     7,     9,
-       9,     9,     9,    11,     2,     3,     3,     3,     3,     3,
-       3,     1,     1
+       1,     1,     1,     3,     3,     3,     3,     2,     3,     5,
+       5,     4,     7,     7,     2
 };
 
 
@@ -1165,199 +1149,155 @@ yyreduce:
   switch (yyn)
     {
   case 3: /* $@1: %empty  */
-#line 38 "tmkoc_yacc.y"
+#line 53 "tmkoc_yacc.y"
                             {
           printf("Good Morning Gokuldham!\n");  // Print welcome message
       }
-#line 1173 "tmkoc_yacc.tab.c"
+#line 1157 "tmkoc_yacc.tab.c"
     break;
 
-  case 10: /* statement: nahane_ja_statement  */
-#line 51 "tmkoc_yacc.y"
-         {
-             if (if_else_active == 1) {
-                 // Execute statements only if the if block is active
-             } else if (if_else_active == 2) {
-                 // Execute statements only if the else block is active
-             } else {
-                 // Execute statements unconditionally (outside if-else)
-             }
-         }
-#line 1187 "tmkoc_yacc.tab.c"
+  case 11: /* expression: NUM  */
+#line 68 "tmkoc_yacc.y"
+                { (yyval.num) = (yyvsp[0].num); }
+#line 1163 "tmkoc_yacc.tab.c"
     break;
 
-  case 11: /* declaration: TAPU_INT IDENTIFIER EQ NUM SEMICOLON  */
-#line 62 "tmkoc_yacc.y"
-                                                  { sym[((char*)(yyvsp[-3].str))[0] - 'a'].num = (yyvsp[-1].num); }
-#line 1193 "tmkoc_yacc.tab.c"
-    break;
-
-  case 12: /* declaration: TAPU_STRING IDENTIFIER EQ STRING_LITERAL SEMICOLON  */
-#line 63 "tmkoc_yacc.y"
-                                                                { sym[((char*)(yyvsp[-3].str))[0] - 'a'].str = strdup((yyvsp[-1].str)); }
-#line 1199 "tmkoc_yacc.tab.c"
-    break;
-
-  case 13: /* declaration: TAPU_INT IDENTIFIER EQ IDENTIFIER PLUS IDENTIFIER SEMICOLON  */
-#line 64 "tmkoc_yacc.y"
-                                                                         { sym[((char*)(yyvsp[-5].str))[0] - 'a'].num = sym[((char*)(yyvsp[-3].str))[0] - 'a'].num + sym[((char*)(yyvsp[-1].str))[0] - 'a'].num; }
-#line 1205 "tmkoc_yacc.tab.c"
-    break;
-
-  case 14: /* declaration: TAPU_INT IDENTIFIER EQ IDENTIFIER MINUS IDENTIFIER SEMICOLON  */
-#line 65 "tmkoc_yacc.y"
-                                                                          { sym[((char*)(yyvsp[-5].str))[0] - 'a'].num = sym[((char*)(yyvsp[-3].str))[0] - 'a'].num - sym[((char*)(yyvsp[-1].str))[0] - 'a'].num; }
-#line 1211 "tmkoc_yacc.tab.c"
-    break;
-
-  case 15: /* declaration: TAPU_INT IDENTIFIER EQ IDENTIFIER TIMES IDENTIFIER SEMICOLON  */
-#line 66 "tmkoc_yacc.y"
-                                                                          { sym[((char*)(yyvsp[-5].str))[0] - 'a'].num = sym[((char*)(yyvsp[-3].str))[0] - 'a'].num * sym[((char*)(yyvsp[-1].str))[0] - 'a'].num; }
-#line 1217 "tmkoc_yacc.tab.c"
-    break;
-
-  case 16: /* declaration: TAPU_INT IDENTIFIER EQ IDENTIFIER DIVIDE IDENTIFIER SEMICOLON  */
-#line 67 "tmkoc_yacc.y"
-                                                                           { 
-                 if ((yyvsp[-1].str) != 0) sym[((char*)(yyvsp[-5].str))[0] - 'a'].num = sym[((char*)(yyvsp[-3].str))[0] - 'a'].num / sym[((char*)(yyvsp[-1].str))[0] - 'a'].num; 
-                 else { 
-                     yyerror("Division by zero\n"); 
-                     exit(1); 
-                 } 
-             }
-#line 1229 "tmkoc_yacc.tab.c"
-    break;
-
-  case 17: /* print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 76 "tmkoc_yacc.y"
-                                                                                  {
-                 if (sym[((char*)(yyvsp[-2].str))[0] - 'a'].num)
-                     printf("Bhidu, %s ka bhav %d hai!\n", (yyvsp[-2].str), sym[((char*)(yyvsp[-2].str))[0] - 'a'].num);
-                 else
-                     printf("NULL\n");
-               }
-#line 1240 "tmkoc_yacc.tab.c"
-    break;
-
-  case 18: /* print_statement: PRINT OPEN_PAREN TAPU_STRING COMMA IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 82 "tmkoc_yacc.y"
-                                                                                     {
-                 if (sym[((char*)(yyvsp[-2].str))[0] - 'a'].str)
-                     printf("Bhidu, %s ka bhav '%s' hai!\n", (yyvsp[-2].str), sym[((char*)(yyvsp[-2].str))[0] - 'a'].str);
-                 else
-                     printf("NULL\n");
-               }
-#line 1251 "tmkoc_yacc.tab.c"
-    break;
-
-  case 19: /* print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER PLUS IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 88 "tmkoc_yacc.y"
-                                                                                                  {
-                 printf("Are Popu, %s aur %s ka result %d hai!\n", (yyvsp[-4].str), (yyvsp[-2].str), sym[((char*)(yyvsp[-4].str))[0] - 'a'].num + sym[((char*)(yyvsp[-2].str))[0] - 'a'].num);
-               }
-#line 1259 "tmkoc_yacc.tab.c"
-    break;
-
-  case 20: /* print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER MINUS IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 91 "tmkoc_yacc.y"
-                                                                                                   {
-                 printf("Are Popu, %s aur %s ka result %d hai!\n", (yyvsp[-4].str), (yyvsp[-2].str), sym[((char*)(yyvsp[-4].str))[0] - 'a'].num - sym[((char*)(yyvsp[-2].str))[0] - 'a'].num);
-               }
-#line 1267 "tmkoc_yacc.tab.c"
-    break;
-
-  case 21: /* print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER TIMES IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 94 "tmkoc_yacc.y"
-                                                                                                   {
-                 printf("Are Popu, %s aur %s ka result %d hai!\n", (yyvsp[-4].str), (yyvsp[-2].str), sym[((char*)(yyvsp[-4].str))[0] - 'a'].num * sym[((char*)(yyvsp[-2].str))[0] - 'a'].num);
-               }
-#line 1275 "tmkoc_yacc.tab.c"
-    break;
-
-  case 22: /* print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER DIVIDE IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 97 "tmkoc_yacc.y"
-                                                                                                    {
-                 if (sym[((char*)(yyvsp[-2].str))[0] - 'a'].num != 0)
-                     printf("Are Popu, %s aur %s ka result %d hai!\n", (yyvsp[-4].str), (yyvsp[-2].str), sym[((char*)(yyvsp[-4].str))[0] - 'a'].num / sym[((char*)(yyvsp[-2].str))[0] - 'a'].num);
-                 else
-                     printf("Aey Pagal Aurat!!\n");
-               }
-#line 1286 "tmkoc_yacc.tab.c"
-    break;
-
-  case 23: /* if_else_statement: BAPUJI_SAHMAT OPEN_PAREN condition CLOSE_PAREN OPEN_BRACE statement_list CLOSE_BRACE BAPUJI_ASAHMAT OPEN_BRACE statement_list CLOSE_BRACE  */
-#line 105 "tmkoc_yacc.y"
-                                                                                                                                                             {
-                    if ((yyvsp[-8].num)) {
-                        printf("Bapuji ne kaha: Sahmat hai!\n"); 
-                        if_else_active = 1;  // Set flag for if block
-                    } else {
-                        printf("Bapuji ne kaha: Asahmat hai!\n");
-                        if_else_active = 2;  // Set flag for else block
-                    }
+  case 12: /* expression: IDENTIFIER  */
+#line 69 "tmkoc_yacc.y"
+                       { 
+                int index = (yyvsp[0].str)[0] - 'a';
+                if (index < 0 || index >= 26) {
+                    yyerror("Invalid variable name");
+                    exit(1);
                 }
-#line 1300 "tmkoc_yacc.tab.c"
+                (yyval.num) = sym[index].num; 
+            }
+#line 1176 "tmkoc_yacc.tab.c"
+    break;
+
+  case 13: /* expression: expression PLUS expression  */
+#line 77 "tmkoc_yacc.y"
+                                       { (yyval.num) = (yyvsp[-2].num) + (yyvsp[0].num); }
+#line 1182 "tmkoc_yacc.tab.c"
+    break;
+
+  case 14: /* expression: expression MINUS expression  */
+#line 78 "tmkoc_yacc.y"
+                                        { (yyval.num) = (yyvsp[-2].num) - (yyvsp[0].num); }
+#line 1188 "tmkoc_yacc.tab.c"
+    break;
+
+  case 15: /* expression: expression TIMES expression  */
+#line 79 "tmkoc_yacc.y"
+                                        { (yyval.num) = (yyvsp[-2].num) * (yyvsp[0].num); }
+#line 1194 "tmkoc_yacc.tab.c"
+    break;
+
+  case 16: /* expression: expression DIVIDE expression  */
+#line 80 "tmkoc_yacc.y"
+                                         { 
+                if ((yyvsp[0].num) != 0) (yyval.num) = (yyvsp[-2].num) / (yyvsp[0].num); 
+                else {
+                    yyerror("Division by zero");
+                    (yyval.num) = 0; // Provide a default value to continue parsing
+                }
+            }
+#line 1206 "tmkoc_yacc.tab.c"
+    break;
+
+  case 17: /* expression: MINUS expression  */
+#line 87 "tmkoc_yacc.y"
+                                       { (yyval.num) = -(yyvsp[0].num); }
+#line 1212 "tmkoc_yacc.tab.c"
+    break;
+
+  case 18: /* expression: OPEN_PAREN expression CLOSE_PAREN  */
+#line 88 "tmkoc_yacc.y"
+                                              { (yyval.num) = (yyvsp[-1].num); }
+#line 1218 "tmkoc_yacc.tab.c"
+    break;
+
+  case 19: /* declaration: TAPU_INT IDENTIFIER EQ expression SEMICOLON  */
+#line 91 "tmkoc_yacc.y"
+                                                         { 
+                 int index = ((char*)(yyvsp[-3].str))[0] - 'a';
+                 if (index < 0 || index >= 26) {
+                     yyerror("Invalid variable name\n");
+                     exit(1);
+                 }
+                 sym[index].num = (yyvsp[-1].num); 
+             }
+#line 1231 "tmkoc_yacc.tab.c"
+    break;
+
+  case 20: /* declaration: TAPU_STRING IDENTIFIER EQ STRING_LITERAL SEMICOLON  */
+#line 99 "tmkoc_yacc.y"
+                                                                { 
+                 int index = ((char*)(yyvsp[-3].str))[0] - 'a';
+                 if (index < 0 || index >= 26) {
+                     yyerror("Invalid variable name\n");
+                     exit(1);
+                 }
+                 sym[index].str = strdup((yyvsp[-1].str)); 
+             }
+#line 1244 "tmkoc_yacc.tab.c"
+    break;
+
+  case 21: /* assignment: IDENTIFIER EQ expression SEMICOLON  */
+#line 109 "tmkoc_yacc.y"
+                                               {
+                int index = ((char*)(yyvsp[-3].str))[0] - 'a';
+                if (index < 0 || index >= 26) {
+                    yyerror("Invalid variable name\n");
+                    exit(1);
+                }
+                sym[index].num = (yyvsp[-1].num);
+            }
+#line 1257 "tmkoc_yacc.tab.c"
+    break;
+
+  case 22: /* print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER CLOSE_PAREN SEMICOLON  */
+#line 119 "tmkoc_yacc.y"
+                                                                                  {
+                 int index = ((char*)(yyvsp[-2].str))[0] - 'a';
+                 if (index < 0 || index >= 26) {
+                     yyerror("Invalid variable name\n");
+                     exit(1);
+                 }
+                 if (sym[index].num)
+                     printf("Bhidu, %s ka bhav %d hai!\n", (yyvsp[-2].str), sym[index].num);
+                 else
+                     printf("NULL\n");
+               }
+#line 1273 "tmkoc_yacc.tab.c"
+    break;
+
+  case 23: /* print_statement: PRINT OPEN_PAREN TAPU_STRING COMMA IDENTIFIER CLOSE_PAREN SEMICOLON  */
+#line 130 "tmkoc_yacc.y"
+                                                                                     {
+                 int index = ((char*)(yyvsp[-2].str))[0] - 'a';
+                 if (index < 0 || index >= 26) {
+                     yyerror("Invalid variable name\n");
+                     exit(1);
+                 }
+                 if (sym[index].str)
+                     printf("Bhidu, %s ka bhav '%s' hai!\n", (yyvsp[-2].str), sym[index].str);
+                 else
+                     printf("NULL\n");
+               }
+#line 1289 "tmkoc_yacc.tab.c"
     break;
 
   case 24: /* nahane_ja_statement: NAHANE_JA SEMICOLON  */
-#line 116 "tmkoc_yacc.y"
+#line 143 "tmkoc_yacc.y"
                                          {  
                     printf("Tu abhi bhi yaha he, nahane ja nahane ja\n");
-                    return 0;
                 }
-#line 1309 "tmkoc_yacc.tab.c"
-    break;
-
-  case 25: /* condition: expression EQUAL expression  */
-#line 122 "tmkoc_yacc.y"
-                                       { (yyval.num) = ((yyvsp[-2].num) == (yyvsp[0].num)); }
-#line 1315 "tmkoc_yacc.tab.c"
-    break;
-
-  case 26: /* condition: expression NE expression  */
-#line 123 "tmkoc_yacc.y"
-                                     { (yyval.num) = ((yyvsp[-2].num) != (yyvsp[0].num)); }
-#line 1321 "tmkoc_yacc.tab.c"
-    break;
-
-  case 27: /* condition: expression LT expression  */
-#line 124 "tmkoc_yacc.y"
-                                     { (yyval.num) = ((yyvsp[-2].num) < (yyvsp[0].num)); }
-#line 1327 "tmkoc_yacc.tab.c"
-    break;
-
-  case 28: /* condition: expression LE expression  */
-#line 125 "tmkoc_yacc.y"
-                                     { (yyval.num) = ((yyvsp[-2].num) <= (yyvsp[0].num)); }
-#line 1333 "tmkoc_yacc.tab.c"
-    break;
-
-  case 29: /* condition: expression GT expression  */
-#line 126 "tmkoc_yacc.y"
-                                     { (yyval.num) = ((yyvsp[-2].num) > (yyvsp[0].num)); }
-#line 1339 "tmkoc_yacc.tab.c"
-    break;
-
-  case 30: /* condition: expression GE expression  */
-#line 127 "tmkoc_yacc.y"
-                                     { (yyval.num) = ((yyvsp[-2].num) >= (yyvsp[0].num)); }
-#line 1345 "tmkoc_yacc.tab.c"
-    break;
-
-  case 31: /* expression: IDENTIFIER  */
-#line 131 "tmkoc_yacc.y"
-                       { (yyval.num) = sym[((char*)(yyvsp[0].str))[0] - 'a'].num; }
-#line 1351 "tmkoc_yacc.tab.c"
-    break;
-
-  case 32: /* expression: NUM  */
-#line 132 "tmkoc_yacc.y"
-                { (yyval.num) = (yyvsp[0].num); }
-#line 1357 "tmkoc_yacc.tab.c"
+#line 1297 "tmkoc_yacc.tab.c"
     break;
 
 
-#line 1361 "tmkoc_yacc.tab.c"
+#line 1301 "tmkoc_yacc.tab.c"
 
       default: break;
     }
@@ -1550,11 +1490,11 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 135 "tmkoc_yacc.y"
+#line 148 "tmkoc_yacc.y"
 
 
 int yyerror(const char *msg) {
-    fprintf(stderr, "Error: %s\n", msg);
+    fprintf(stderr, "Error at line %d, column %d: %s\n", line_num, column_num, msg);
     return 0;
 }
 
@@ -1573,6 +1513,7 @@ int main(int argc, char *argv[]) {
     yyparse();
 
     fclose(yyin);
+    free_symbol_table(); // Free allocated memory
 
     printf("Gokuldham ka din shubh rahe!\n");
 
