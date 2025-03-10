@@ -1,7 +1,11 @@
+/* tmkoc_lex.l */
 %{
 #include "tmkoc_yacc.tab.h"
 int line_num = 1; // Track line numbers
 int column_num = 1; // Track column numbers
+
+// Forward declaration of error function from yacc
+extern void print_error(int type, const char *msg);
 %}
 
 digit           [0-9]
@@ -42,7 +46,12 @@ comment         \/\/[^\n]*
 {comment}       		{ column_num += yyleng; } /* Ignore single-line comments */
 \n                		{ line_num++; column_num = 1; } /* Track new lines */
 {whitespace}    		{ column_num += yyleng; } /* Ignore whitespace */
-.               		{ fprintf(stderr, "Error at line %d, column %d: Invalid character '%s'\n", line_num, column_num, yytext); column_num += yyleng; }
+.               		{ 
+                          char msg[100];
+                          snprintf(msg, sizeof(msg), "Invalid character '%s'", yytext);
+                          print_error(0, msg); // 0 is ERROR_LEXICAL
+                          column_num += yyleng; 
+                        }
 
 %%
 

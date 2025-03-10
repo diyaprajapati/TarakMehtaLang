@@ -1,3 +1,4 @@
+/* tmkoc_yacc.y */
 %{
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,12 +10,39 @@ extern int yyerror(const char *msg);
 extern int line_num; // Line number from lexer
 extern int column_num; // Column number from lexer
 
+// Error type enumeration
+typedef enum {
+    ERROR_LEXICAL,
+    ERROR_SYNTAX,
+    ERROR_SEMANTIC,
+    ERROR_RUNTIME
+} ErrorType;
+
+// Function to print detailed error messages
+void print_error(ErrorType type, const char *msg) {
+    switch(type) {
+        case ERROR_LEXICAL:
+            fprintf(stderr, "Lexical Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+        case ERROR_SYNTAX:
+            fprintf(stderr, "Syntax Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+        case ERROR_SEMANTIC:
+            fprintf(stderr, "Semantic Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+        case ERROR_RUNTIME:
+            fprintf(stderr, "Runtime Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+    }
+}
+
 typedef union {
     int num;
     char* str;
 } SymValue;
 
 SymValue sym[26];
+int initialized[26] = {0}; // Track if variables are initialized
 
 void free_symbol_table() {
     for (int i = 0; i < 26; i++) {
@@ -69,18 +97,24 @@ expression: NUM { $$ = $1; }
           | IDENTIFIER { 
                 int index = $1[0] - 'a';
                 if (index < 0 || index >= 26) {
-                    yyerror("Invalid variable name");
+                    print_error(ERROR_SEMANTIC, "Invalid variable name");
                     exit(1);
                 }
-                $$ = sym[index].num; 
+                if (!initialized[index]) {
+                    print_error(ERROR_SEMANTIC, "Variable used before initialization");
+                    $$ = 0; // Provide default value to continue
+                } else {
+                    $$ = sym[index].num;
+                }
             }
           | expression PLUS expression { $$ = $1 + $3; }
           | expression MINUS expression { $$ = $1 - $3; }
           | expression TIMES expression { $$ = $1 * $3; }
           | expression DIVIDE expression { 
-                if ($3 != 0) $$ = $1 / $3; 
-                else {
-                    yyerror("Division by zero");
+                if ($3 != 0) {
+                    $$ = $1 / $3;
+                } else {
+                    print_error(ERROR_RUNTIME, "Division by zero");
                     $$ = 0; // Provide a default value to continue parsing
                 }
             }
@@ -91,25 +125,35 @@ expression: NUM { $$ = $1; }
 declaration: TAPU_INT IDENTIFIER EQ expression SEMICOLON { 
                  int index = ((char*)$2)[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 sym[index].num = $4; 
+                 sym[index].num = $4;
+                 initialized[index] = 1; 
              }
            | TAPU_STRING IDENTIFIER EQ STRING_LITERAL SEMICOLON { 
                  int index = ((char*)$2)[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 sym[index].str = strdup($4); 
+                 if (sym[index].str) {
+                     free(sym[index].str); // Free any existing string
+                 }
+                 sym[index].str = strdup($4);
+                 initialized[index] = 1;
              }
            ;
 
 assignment: IDENTIFIER EQ expression SEMICOLON {
                 int index = ((char*)$1)[0] - 'a';
                 if (index < 0 || index >= 26) {
-                    yyerror("Invalid variable name\n");
+                    print_error(ERROR_SEMANTIC, "Invalid variable name");
+                    exit(1);
+                }
+                // Check if variable was declared with proper type
+                if (!initialized[index]) {
+                    print_error(ERROR_SEMANTIC, "Assignment to undeclared variable");
                     exit(1);
                 }
                 sym[index].num = $3;
@@ -119,24 +163,28 @@ assignment: IDENTIFIER EQ expression SEMICOLON {
 print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER CLOSE_PAREN SEMICOLON {
                  int index = ((char*)$5)[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 if (sym[index].num)
-                     printf("Bhidu, %s ka bhav %d hai!\n", $5, sym[index].num);
-                 else
+                 if (!initialized[index]) {
+                     print_error(ERROR_SEMANTIC, "Attempt to print uninitialized variable");
                      printf("NULL\n");
+                 } else {
+                     printf("Bhidu, %s ka bhav %d hai!\n", $5, sym[index].num);
+                 }
                }
                | PRINT OPEN_PAREN TAPU_STRING COMMA IDENTIFIER CLOSE_PAREN SEMICOLON {
                  int index = ((char*)$5)[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 if (sym[index].str)
-                     printf("Bhidu, %s ka bhav '%s' hai!\n", $5, sym[index].str);
-                 else
+                 if (!initialized[index] || !sym[index].str) {
+                     print_error(ERROR_SEMANTIC, "Attempt to print uninitialized string");
                      printf("NULL\n");
+                 } else {
+                     printf("Bhidu, %s ka bhav '%s' hai!\n", $5, sym[index].str);
+                 }
                }
                ;
 
@@ -148,7 +196,7 @@ nahane_ja_statement: NAHANE_JA SEMICOLON {
 %%
 
 int yyerror(const char *msg) {
-    fprintf(stderr, "Error at line %d, column %d: %s\n", line_num, column_num, msg);
+    print_error(ERROR_SYNTAX, msg);
     return 0;
 }
 

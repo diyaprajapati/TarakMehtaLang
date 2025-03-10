@@ -67,7 +67,7 @@
 
 
 /* First part of user prologue.  */
-#line 1 "tmkoc_yacc.y"
+#line 2 "tmkoc_yacc.y"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -79,12 +79,39 @@ extern int yyerror(const char *msg);
 extern int line_num; // Line number from lexer
 extern int column_num; // Column number from lexer
 
+// Error type enumeration
+typedef enum {
+    ERROR_LEXICAL,
+    ERROR_SYNTAX,
+    ERROR_SEMANTIC,
+    ERROR_RUNTIME
+} ErrorType;
+
+// Function to print detailed error messages
+void print_error(ErrorType type, const char *msg) {
+    switch(type) {
+        case ERROR_LEXICAL:
+            fprintf(stderr, "Lexical Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+        case ERROR_SYNTAX:
+            fprintf(stderr, "Syntax Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+        case ERROR_SEMANTIC:
+            fprintf(stderr, "Semantic Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+        case ERROR_RUNTIME:
+            fprintf(stderr, "Runtime Error at line %d, column %d: %s\n", line_num, column_num, msg);
+            break;
+    }
+}
+
 typedef union {
     int num;
     char* str;
 } SymValue;
 
 SymValue sym[26];
+int initialized[26] = {0}; // Track if variables are initialized
 
 void free_symbol_table() {
     for (int i = 0; i < 26; i++) {
@@ -96,7 +123,7 @@ void free_symbol_table() {
 }
 
 
-#line 100 "tmkoc_yacc.tab.c"
+#line 127 "tmkoc_yacc.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -552,9 +579,9 @@ static const yytype_int8 yytranslate[] =
 /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    50,    50,    53,    53,    58,    59,    62,    63,    64,
-      65,    68,    69,    77,    78,    79,    80,    87,    88,    91,
-      99,   109,   119,   130,   143
+       0,    78,    78,    81,    81,    86,    87,    90,    91,    92,
+      93,    96,    97,   110,   111,   112,   113,   121,   122,   125,
+     134,   148,   163,   176,   191
 };
 #endif
 
@@ -1149,155 +1176,175 @@ yyreduce:
   switch (yyn)
     {
   case 3: /* $@1: %empty  */
-#line 53 "tmkoc_yacc.y"
+#line 81 "tmkoc_yacc.y"
                             {
           printf("Good Morning Gokuldham!\n");  // Print welcome message
       }
-#line 1157 "tmkoc_yacc.tab.c"
+#line 1184 "tmkoc_yacc.tab.c"
     break;
 
   case 11: /* expression: NUM  */
-#line 68 "tmkoc_yacc.y"
+#line 96 "tmkoc_yacc.y"
                 { (yyval.num) = (yyvsp[0].num); }
-#line 1163 "tmkoc_yacc.tab.c"
+#line 1190 "tmkoc_yacc.tab.c"
     break;
 
   case 12: /* expression: IDENTIFIER  */
-#line 69 "tmkoc_yacc.y"
+#line 97 "tmkoc_yacc.y"
                        { 
                 int index = (yyvsp[0].str)[0] - 'a';
                 if (index < 0 || index >= 26) {
-                    yyerror("Invalid variable name");
+                    print_error(ERROR_SEMANTIC, "Invalid variable name");
                     exit(1);
                 }
-                (yyval.num) = sym[index].num; 
+                if (!initialized[index]) {
+                    print_error(ERROR_SEMANTIC, "Variable used before initialization");
+                    (yyval.num) = 0; // Provide default value to continue
+                } else {
+                    (yyval.num) = sym[index].num;
+                }
             }
-#line 1176 "tmkoc_yacc.tab.c"
+#line 1208 "tmkoc_yacc.tab.c"
     break;
 
   case 13: /* expression: expression PLUS expression  */
-#line 77 "tmkoc_yacc.y"
+#line 110 "tmkoc_yacc.y"
                                        { (yyval.num) = (yyvsp[-2].num) + (yyvsp[0].num); }
-#line 1182 "tmkoc_yacc.tab.c"
+#line 1214 "tmkoc_yacc.tab.c"
     break;
 
   case 14: /* expression: expression MINUS expression  */
-#line 78 "tmkoc_yacc.y"
+#line 111 "tmkoc_yacc.y"
                                         { (yyval.num) = (yyvsp[-2].num) - (yyvsp[0].num); }
-#line 1188 "tmkoc_yacc.tab.c"
+#line 1220 "tmkoc_yacc.tab.c"
     break;
 
   case 15: /* expression: expression TIMES expression  */
-#line 79 "tmkoc_yacc.y"
+#line 112 "tmkoc_yacc.y"
                                         { (yyval.num) = (yyvsp[-2].num) * (yyvsp[0].num); }
-#line 1194 "tmkoc_yacc.tab.c"
+#line 1226 "tmkoc_yacc.tab.c"
     break;
 
   case 16: /* expression: expression DIVIDE expression  */
-#line 80 "tmkoc_yacc.y"
+#line 113 "tmkoc_yacc.y"
                                          { 
-                if ((yyvsp[0].num) != 0) (yyval.num) = (yyvsp[-2].num) / (yyvsp[0].num); 
-                else {
-                    yyerror("Division by zero");
+                if ((yyvsp[0].num) != 0) {
+                    (yyval.num) = (yyvsp[-2].num) / (yyvsp[0].num);
+                } else {
+                    print_error(ERROR_RUNTIME, "Division by zero");
                     (yyval.num) = 0; // Provide a default value to continue parsing
                 }
             }
-#line 1206 "tmkoc_yacc.tab.c"
+#line 1239 "tmkoc_yacc.tab.c"
     break;
 
   case 17: /* expression: MINUS expression  */
-#line 87 "tmkoc_yacc.y"
+#line 121 "tmkoc_yacc.y"
                                        { (yyval.num) = -(yyvsp[0].num); }
-#line 1212 "tmkoc_yacc.tab.c"
+#line 1245 "tmkoc_yacc.tab.c"
     break;
 
   case 18: /* expression: OPEN_PAREN expression CLOSE_PAREN  */
-#line 88 "tmkoc_yacc.y"
+#line 122 "tmkoc_yacc.y"
                                               { (yyval.num) = (yyvsp[-1].num); }
-#line 1218 "tmkoc_yacc.tab.c"
+#line 1251 "tmkoc_yacc.tab.c"
     break;
 
   case 19: /* declaration: TAPU_INT IDENTIFIER EQ expression SEMICOLON  */
-#line 91 "tmkoc_yacc.y"
+#line 125 "tmkoc_yacc.y"
                                                          { 
                  int index = ((char*)(yyvsp[-3].str))[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 sym[index].num = (yyvsp[-1].num); 
+                 sym[index].num = (yyvsp[-1].num);
+                 initialized[index] = 1; 
              }
-#line 1231 "tmkoc_yacc.tab.c"
+#line 1265 "tmkoc_yacc.tab.c"
     break;
 
   case 20: /* declaration: TAPU_STRING IDENTIFIER EQ STRING_LITERAL SEMICOLON  */
-#line 99 "tmkoc_yacc.y"
+#line 134 "tmkoc_yacc.y"
                                                                 { 
                  int index = ((char*)(yyvsp[-3].str))[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 sym[index].str = strdup((yyvsp[-1].str)); 
+                 if (sym[index].str) {
+                     free(sym[index].str); // Free any existing string
+                 }
+                 sym[index].str = strdup((yyvsp[-1].str));
+                 initialized[index] = 1;
              }
-#line 1244 "tmkoc_yacc.tab.c"
+#line 1282 "tmkoc_yacc.tab.c"
     break;
 
   case 21: /* assignment: IDENTIFIER EQ expression SEMICOLON  */
-#line 109 "tmkoc_yacc.y"
+#line 148 "tmkoc_yacc.y"
                                                {
                 int index = ((char*)(yyvsp[-3].str))[0] - 'a';
                 if (index < 0 || index >= 26) {
-                    yyerror("Invalid variable name\n");
+                    print_error(ERROR_SEMANTIC, "Invalid variable name");
+                    exit(1);
+                }
+                // Check if variable was declared with proper type
+                if (!initialized[index]) {
+                    print_error(ERROR_SEMANTIC, "Assignment to undeclared variable");
                     exit(1);
                 }
                 sym[index].num = (yyvsp[-1].num);
             }
-#line 1257 "tmkoc_yacc.tab.c"
+#line 1300 "tmkoc_yacc.tab.c"
     break;
 
   case 22: /* print_statement: PRINT OPEN_PAREN TAPU_INT COMMA IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 119 "tmkoc_yacc.y"
+#line 163 "tmkoc_yacc.y"
                                                                                   {
                  int index = ((char*)(yyvsp[-2].str))[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 if (sym[index].num)
-                     printf("Bhidu, %s ka bhav %d hai!\n", (yyvsp[-2].str), sym[index].num);
-                 else
+                 if (!initialized[index]) {
+                     print_error(ERROR_SEMANTIC, "Attempt to print uninitialized variable");
                      printf("NULL\n");
+                 } else {
+                     printf("Bhidu, %s ka bhav %d hai!\n", (yyvsp[-2].str), sym[index].num);
+                 }
                }
-#line 1273 "tmkoc_yacc.tab.c"
+#line 1318 "tmkoc_yacc.tab.c"
     break;
 
   case 23: /* print_statement: PRINT OPEN_PAREN TAPU_STRING COMMA IDENTIFIER CLOSE_PAREN SEMICOLON  */
-#line 130 "tmkoc_yacc.y"
+#line 176 "tmkoc_yacc.y"
                                                                                      {
                  int index = ((char*)(yyvsp[-2].str))[0] - 'a';
                  if (index < 0 || index >= 26) {
-                     yyerror("Invalid variable name\n");
+                     print_error(ERROR_SEMANTIC, "Invalid variable name");
                      exit(1);
                  }
-                 if (sym[index].str)
-                     printf("Bhidu, %s ka bhav '%s' hai!\n", (yyvsp[-2].str), sym[index].str);
-                 else
+                 if (!initialized[index] || !sym[index].str) {
+                     print_error(ERROR_SEMANTIC, "Attempt to print uninitialized string");
                      printf("NULL\n");
+                 } else {
+                     printf("Bhidu, %s ka bhav '%s' hai!\n", (yyvsp[-2].str), sym[index].str);
+                 }
                }
-#line 1289 "tmkoc_yacc.tab.c"
+#line 1336 "tmkoc_yacc.tab.c"
     break;
 
   case 24: /* nahane_ja_statement: NAHANE_JA SEMICOLON  */
-#line 143 "tmkoc_yacc.y"
+#line 191 "tmkoc_yacc.y"
                                          {  
                     printf("Tu abhi bhi yaha he, nahane ja nahane ja\n");
                 }
-#line 1297 "tmkoc_yacc.tab.c"
+#line 1344 "tmkoc_yacc.tab.c"
     break;
 
 
-#line 1301 "tmkoc_yacc.tab.c"
+#line 1348 "tmkoc_yacc.tab.c"
 
       default: break;
     }
@@ -1490,11 +1537,11 @@ yyreturnlab:
   return yyresult;
 }
 
-#line 148 "tmkoc_yacc.y"
+#line 196 "tmkoc_yacc.y"
 
 
 int yyerror(const char *msg) {
-    fprintf(stderr, "Error at line %d, column %d: %s\n", line_num, column_num, msg);
+    print_error(ERROR_SYNTAX, msg);
     return 0;
 }
 

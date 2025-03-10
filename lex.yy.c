@@ -494,12 +494,16 @@ int yy_flex_debug = 0;
 #define YY_RESTORE_YY_MORE_OFFSET
 char *yytext;
 #line 1 "tmkoc_lex.l"
-#line 2 "tmkoc_lex.l"
+/* tmkoc_lex.l */
+#line 3 "tmkoc_lex.l"
 #include "tmkoc_yacc.tab.h"
 int line_num = 1; // Track line numbers
 int column_num = 1; // Track column numbers
-#line 502 "lex.yy.c"
-#line 503 "lex.yy.c"
+
+// Forward declaration of error function from yacc
+extern void print_error(int type, const char *msg);
+#line 506 "lex.yy.c"
+#line 507 "lex.yy.c"
 
 #define INITIAL 0
 
@@ -716,10 +720,10 @@ YY_DECL
 		}
 
 	{
-#line 14 "tmkoc_lex.l"
+#line 18 "tmkoc_lex.l"
 
 
-#line 723 "lex.yy.c"
+#line 727 "lex.yy.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -778,158 +782,163 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 16 "tmkoc_lex.l"
+#line 20 "tmkoc_lex.l"
 { column_num += yyleng; return EQ; }
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 17 "tmkoc_lex.l"
+#line 21 "tmkoc_lex.l"
 { column_num += yyleng; return SEMICOLON; }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 18 "tmkoc_lex.l"
+#line 22 "tmkoc_lex.l"
 { column_num += yyleng; return COMMA;}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 19 "tmkoc_lex.l"
+#line 23 "tmkoc_lex.l"
 { column_num += yyleng; return OPEN_PAREN;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 20 "tmkoc_lex.l"
+#line 24 "tmkoc_lex.l"
 { column_num += yyleng; return CLOSE_PAREN;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 21 "tmkoc_lex.l"
+#line 25 "tmkoc_lex.l"
 { column_num += yyleng; return PRINT; }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 22 "tmkoc_lex.l"
+#line 26 "tmkoc_lex.l"
 { column_num += yyleng; return NAHANE_JA; }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 23 "tmkoc_lex.l"
+#line 27 "tmkoc_lex.l"
 { column_num += yyleng; return PLUS; }
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 24 "tmkoc_lex.l"
+#line 28 "tmkoc_lex.l"
 { column_num += yyleng; return MINUS; }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 25 "tmkoc_lex.l"
+#line 29 "tmkoc_lex.l"
 { column_num += yyleng; return TIMES; }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 26 "tmkoc_lex.l"
+#line 30 "tmkoc_lex.l"
 { column_num += yyleng; return DIVIDE; }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 27 "tmkoc_lex.l"
+#line 31 "tmkoc_lex.l"
 { column_num += yyleng; return TAPU_INT; }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 28 "tmkoc_lex.l"
+#line 32 "tmkoc_lex.l"
 { column_num += yyleng; return TAPU_STRING; }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 29 "tmkoc_lex.l"
+#line 33 "tmkoc_lex.l"
 { column_num += yyleng; return GOKULDHAM; }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 30 "tmkoc_lex.l"
+#line 34 "tmkoc_lex.l"
 { column_num += yyleng; return OPEN_BRACE; }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 31 "tmkoc_lex.l"
+#line 35 "tmkoc_lex.l"
 { column_num += yyleng; return CLOSE_BRACE; }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 32 "tmkoc_lex.l"
+#line 36 "tmkoc_lex.l"
 { column_num += yyleng; return EQUAL; }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 33 "tmkoc_lex.l"
+#line 37 "tmkoc_lex.l"
 { column_num += yyleng; return NE; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 34 "tmkoc_lex.l"
+#line 38 "tmkoc_lex.l"
 { column_num += yyleng; return LT; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 35 "tmkoc_lex.l"
+#line 39 "tmkoc_lex.l"
 { column_num += yyleng; return LE; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 36 "tmkoc_lex.l"
+#line 40 "tmkoc_lex.l"
 { column_num += yyleng; return GT; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 37 "tmkoc_lex.l"
+#line 41 "tmkoc_lex.l"
 { column_num += yyleng; return GE; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 38 "tmkoc_lex.l"
+#line 42 "tmkoc_lex.l"
 { yylval.str = strdup(yytext); column_num += yyleng; return IDENTIFIER; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 39 "tmkoc_lex.l"
+#line 43 "tmkoc_lex.l"
 { yylval.num = atoi(yytext); column_num += yyleng; return NUM; }
 	YY_BREAK
 case 25:
 /* rule 25 can match eol */
 YY_RULE_SETUP
-#line 41 "tmkoc_lex.l"
+#line 45 "tmkoc_lex.l"
 { yylval.str = strdup(yytext); column_num += yyleng; return STRING_LITERAL; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 42 "tmkoc_lex.l"
+#line 46 "tmkoc_lex.l"
 { column_num += yyleng; } /* Ignore single-line comments */
 	YY_BREAK
 case 27:
 /* rule 27 can match eol */
 YY_RULE_SETUP
-#line 43 "tmkoc_lex.l"
+#line 47 "tmkoc_lex.l"
 { line_num++; column_num = 1; } /* Track new lines */
 	YY_BREAK
 case 28:
 /* rule 28 can match eol */
 YY_RULE_SETUP
-#line 44 "tmkoc_lex.l"
+#line 48 "tmkoc_lex.l"
 { column_num += yyleng; } /* Ignore whitespace */
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 45 "tmkoc_lex.l"
-{ fprintf(stderr, "Error at line %d, column %d: Invalid character '%s'\n", line_num, column_num, yytext); column_num += yyleng; }
+#line 49 "tmkoc_lex.l"
+{ 
+                          char msg[100];
+                          snprintf(msg, sizeof(msg), "Invalid character '%s'", yytext);
+                          print_error(0, msg); // 0 is ERROR_LEXICAL
+                          column_num += yyleng; 
+                        }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 47 "tmkoc_lex.l"
+#line 56 "tmkoc_lex.l"
 ECHO;
 	YY_BREAK
-#line 933 "lex.yy.c"
+#line 942 "lex.yy.c"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -1934,7 +1943,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 47 "tmkoc_lex.l"
+#line 56 "tmkoc_lex.l"
 
 
 int yywrap(void) {
