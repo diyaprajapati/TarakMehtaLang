@@ -1,0 +1,13 @@
+# Flex/Bison generated files
+lex.yy.c
+tmkoc_yacc.tab.c
+tmkoc_yacc.tab.h
+
+# Compiler intermediate files
+tmkoc_compiler
+tmkoc_parser
+
+# Object files and binaries
+*.o
+*.out
+*.exe
